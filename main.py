@@ -16,3 +16,5 @@ x = "12"
 valid = vld.Validator(data,rules)
 print(valid.isValidData())
 print(valid.getFailedAttributes())
+
+#For Ameer Paraskiva c:

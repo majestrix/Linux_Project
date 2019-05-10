@@ -6,7 +6,6 @@ class Validator:
       self.rules = rules
       self.wrong = []
       self.validate()
-      
           
     def validate(self):
       types = {
@@ -15,9 +14,22 @@ class Validator:
         "email": self.isEmail,
         "date": self.isDate,
         "required":self.isRequired,
+        "array": self.isArray,
         "min": self.minValue,
         "max": self.maxValue,
         "in": self.isIn
+      }
+
+      errors = {
+        "string": "The $x field must be a string",
+        "number": "The $x field must be numeric",
+        "email": "The $x field must be a valid e-mail",
+        "date": "The $x field must be a valid date",
+        "required": "The $x field is required",
+        "array": "The $x must be an array",
+        "min": "The $x field must be atleast $y",
+        "max": "The $x field must be at max $y",
+        "in": "The $x field must be one of $y"
       }
 
       for key,values in self.rules.items():
@@ -30,8 +42,16 @@ class Validator:
             toks = value.split(":")
             ans = types[toks[0]](self.data[key],toks[1])
           if not ans:
-            if not key in self.wrong:
-              self.wrong.append(key)
+            temp = value.split(":")
+            err = errors[temp[0]].replace("$x",key)
+            if len(temp) > 1:
+              err = err.replace("$y",temp[1])
+            if not self.listFind(value):
+              self.wrong.append([key,err])
+            else:
+              self.listAppend(key,err)
+
+
 
     def isString(self,x):
       if type(x) is str:
@@ -84,7 +104,7 @@ class Validator:
       return True
     
     def isArray(self,x):
-      return type(x) is list
+      return type(x) is list or type(x) is dict
 
     def isIn(self,x,opts):
       opts = opts.split(",")
@@ -104,7 +124,20 @@ class Validator:
       if len(self.wrong) == 0:
         return None
       else:
-        return self.wrong
+        failed = []
+        for item in self.wrong: 
+          failed.append(item[0])
+        return failed
 
+    def listFind(self,y):
+      for i in self.wrong:
+        if(i[0] == y):
+            return True
+      return False
+
+    def listAppend(self,y,x):
+      for i in self.wrong:
+          if(i[0] == y):
+              i.append(x)
     # def getErrorMessages(self):
     #   if wrong
